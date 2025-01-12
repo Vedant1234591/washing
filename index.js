@@ -83,9 +83,6 @@ app.use((req, res, next) => {
   next();
 })
 
-
-
-
 app.get("/", async (req, res) => {
   res.render("login.ejs");
 });
@@ -104,9 +101,6 @@ app.get("/education", isLoggedIn , async (req, res) => {
   const allListings = await Education.find({});
   res.render("education.ejs", { allListings });
 });
-
-
-
 app.get("/new",  isLoggedIn ,async (req, res) => {
   res.render("new.ejs");
  });
@@ -153,13 +147,8 @@ app.post("/educationnew", isLoggedIn , async (req, res) => {
       res.redirect("/");
     }
   });
-  
-
-  
   app.post("/login",
     passport.authenticate("local",{failureRedirect: "/",failureFlash: true}), async (req, res) => {
-    
-    
     res.redirect("/home");
   });
   
@@ -179,18 +168,31 @@ app.post("/educationnew", isLoggedIn , async (req, res) => {
   user.cart.push(req.params.productid)
   await user.save();
   req.flash("success", "Added to cart");
-     res.redirect("/shop")
+     res.redirect("/home")
   })
+  app.get("/remove-from-cart/:productid", async (req, res) => {
+    const user = await User.findOne({ email: req.user.email });
+    
+   
+    user.cart = user.cart.filter(productId => productId.toString() !== req.params.productid);
+    await user.save();
+  
+    req.flash("success", "Removed from cart");
+    res.redirect("/shop"); 
+  });
   app.get("/shop", isLoggedIn , async (req, res) => {
     let user =await User.findOne({email:req.user.email}).populate("cart")
+   let users =await User.findOne({email:req.user.email}).populate("order")
     const totalAmount = user.cart.reduce((sum, item) => sum + item.price, 0);
     const allListings = await Listing.find({});
     const cartTitles = user.cart.map(item => item.title).join(", ");
-    res.render("shop.ejs",{user: user, totalAmount: totalAmount, cartTitles: cartTitles, allListings: allListings});
+    res.render("shop.ejs",{user: user,users: users, totalAmount: totalAmount, cartTitles: cartTitles, allListings: allListings});
 });
   
 app.get("/checkout", isLoggedIn , async (req, res) => {
   let user =await User.findOne({email:req.user.email}).populate("cart")
+ 
+
   const cartTitles = user.cart.map(item => item.title).join(", ");
   const totalAmount = user.cart.reduce((sum, item) => sum + item.price, 0);
   res.render("checkout.ejs",{user: user, cartTitles: cartTitles, totalAmount: totalAmount});
@@ -198,15 +200,26 @@ app.get("/checkout", isLoggedIn , async (req, res) => {
 });
 
 app.post("/checkout", isLoggedIn , async (req, res) => {
-  const newlistings = new Customer(req.body.listing); 
-  await newlistings.save();
- res.redirect("/home");
+const newlistings = new Customer(req.body.listing); 
+await newlistings.save();
+const user = await User.findOne({ email: req.user.email }).populate("cart");
+const productIds = req.body.productIds;
+if (!productIds || productIds.length === 0) {
+    req.flash("error", "Your cart is empty.");
+    return res.redirect("/cart"); 
+  }
+const cartProducts = await Listing.find({ '_id': { $in: productIds } });
+user.order = [...user.order, ...cartProducts]; 
+user.cart = [];
+await user.save();req.flash("success", "Purchased Successfully");
+res.redirect("/home");
 });
 app.get("/customer", isLoggedIn , async (req, res) => {
   const allListings = await Customer.find({});
   res.render("customer.ejs", { allListings });
 });
-
-  app.listen(8080, () => {
+ app.listen(8080, () => {
       console.log("server is listening to port 8080");
   }); 
+
+  

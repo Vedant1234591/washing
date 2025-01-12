@@ -42,7 +42,7 @@
                 <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
                     <h3 class="text-2xl font-semibold text-gray-800 mb-4">Shipping Details</h3>
                     <form action="/checkout" method="POST" class="space-y-4">
-                        
+                        <% user.cart.forEach(function(item) { %> <input type="hidden" name="productIds" value="<%= item._id %>"> <% }) %>
         <input type="hidden" id="total-amount-field" name="listing[totalamount]" value="<%= totalAmount.toFixed(2) %>">
         <input type="hidden" id="total-amount-field" name="listing[products]" value="<%= cartTitles %> ">
                         <div class="flex flex-col">
@@ -75,6 +75,6 @@
 
     <%- include("./includes/footer.ejs") %>
     
-   
+    <script src="/javascript/script.js"></script>
 </body>
 </html>

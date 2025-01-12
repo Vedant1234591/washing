@@ -8,12 +8,12 @@
     <link href="/stylesheet/output.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-600">
-    <%- include("./includes/navbar.ejs") %>
-    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white"><h1 class="text-4xl md:text-6xl font-bold"><%- include("./includes/flash.ejs") %></h1></div>
+<body class="bg-slate-600"><%- include("./includes/navbar.ejs") %>
+   <span class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white"><h1 class="text-4xl md:text-6xl font-bold"><%- include("./includes/flash.ejs") %></h1></span>
+    
 <section class="py-16 bg-white">
     <div class="container mx-auto text-center">
-        <span class="mt-6 px-8 py-3 bg-green-600 rounded-lg text-white text-lg"> OUR OWN CART TO STORE THINGS TO BYE</span><br><br>
+        <h2 class="text-3xl font-bold mb-8 text-gray-800">MY CART</h2><br><br>
   
            
             <div class="mt-6 px-8 py-3 bg-green-600 rounded-lg text-white text-lg">
@@ -43,7 +43,8 @@
                             <p class="text-gray-600 mt-2"> <%=item.description %></p>
                             
                             <p class="text-lg font-semibold text-gray-800 mt-2"> <%= item.price %></p> 
-                           
+                            <a href="/remove-from-cart/<%= item._id %>"
+                                class="mt-4 inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg product-1">Remove from Cart</a>
                         </div>
                         <% }) %>
                        
@@ -51,7 +52,7 @@
                     
                     </div>
                     <br> <br><br> <br>
-                    <span class="mt-6 px-8 py-3 bg-green-600 rounded-lg text-white text-lg"> 
+                    
                         <a href="/checkout" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
                             Buy Now 
                         </a>
@@ -62,36 +63,33 @@
        
     </div>
 </section>
-
-
 <section id="featured-products" class="py-16 bg-white">
     <div class="container mx-auto text-center">
-        <h2 class="text-3xl font-bold mb-8 text-gray-800">Featured Products</h2>
+        <h2 class="text-3xl font-bold mb-8 text-gray-800">MY ORDER</h2>
         
         
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="cart">
-                <% for (let listing of allListings) { %>
+                <% users.order.forEach(function(item){ %>
                     <div class="bg-gray-100 p-4 rounded-lg shadow-lg ">
-                    <img src="<%= listing.image %>" alt="Product 1" class="w-full h-48 object-cover rounded-md mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800"> <%= listing.title %></h3>
-                    <p class="text-gray-600 mt-2"> <%= listing.description %></p>
+                    <img src="<%= item.image %>" alt="Product 1" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800"> <%= item.title %></h3>
+                    <p class="text-gray-600 mt-2"> <%=item.description %></p>
                     
-                    <p class="text-lg font-semibold text-gray-800 mt-2"> <%= listing.price %></p> <!-- Corrected line -->
-                    <a href="/addtocart/<%= listing._id %>"
-                        class="mt-4 inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg product-1">Add to
-                        Cart</a>
+                    <p class="text-lg font-semibold text-gray-800 mt-2"> <%= item.price %></p> 
+                  
                 </div>
-                <% } %>
+                <% }) %>
+               
+               
+            
             </div>
             
-        
     </div>
 </section>
-
 
  
 
 <%- include("./includes/footer.ejs") %>
-   
+<script src="/javascript/script.js"></script>
 </body>
 </html>

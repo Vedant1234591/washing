@@ -11,6 +11,11 @@ const userSchema = new Schema({
     type:mongoose.Schema.Types.ObjectId,
     default: [],
     ref: 'Listing'
+  }],
+  order:[{
+    type:mongoose.Schema.Types.ObjectId,
+    default: [],
+    ref: 'Listing'
   }]
   
 });
