@@ -58,4 +58,41 @@ function autoDismissAlert(alertId) {
   if (document.getElementById('error-alert')) {
     autoDismissAlert('error-alert');
   }
-  
+  document.getElementById("toggle-sidebar").addEventListener("click", function() {
+    const sidebar = document.querySelector(".sidebar");
+    sidebar.classList.toggle("open");
+  });
+  // On page load, ensure sidebar is hidden
+document.addEventListener("DOMContentLoaded", function() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.remove("open");  // Ensure it's hidden initially
+});
+
+// Toggle sidebar visibility on button click
+document.getElementById("toggle-sidebar").addEventListener("click", function() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("open");  // Toggle visibility
+});
+// Get the sidebar and buttons
+const sidebar = document.getElementById("sidebar");
+const toggleButton = document.getElementById("toggle-sidebar");
+const closeButton = document.getElementById("button-close");
+
+// Ensure the sidebar is hidden when the page loads (no need to use localStorage)
+document.addEventListener("DOMContentLoaded", function() {
+  // Ensure the sidebar is hidden by default when the page loads
+  sidebar.classList.remove("open");
+});
+
+// Toggle sidebar visibility on button click
+toggleButton.addEventListener("click", function() {
+  sidebar.classList.toggle("open");  // Toggle the 'open' class to show/hide the sidebar
+});
+
+// Close the sidebar when the close button inside the sidebar is clicked
+closeButton.addEventListener("click", function() {
+  sidebar.classList.remove("open");  // Remove the 'open' class to hide the sidebar
+});
+document.addEventListener("DOMContentLoaded", function() {
+  sidebar.classList.remove("open"); // Sidebar starts off-screen (hidden)
+});

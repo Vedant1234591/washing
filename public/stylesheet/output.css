@@ -1282,6 +1282,7 @@ video {
 .sidebar {
   position: fixed;
   top: 0;
+  right: -300px;
   left: 0;
   width: 250px;
   height: 100%;
