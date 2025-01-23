@@ -20,10 +20,11 @@ const Blog = require("./models/blog.js");
 const Education = require("./models/education.js");
 const User = require("./models/user.js");
 const Customer = require("./models/customer.js");
-
+const Review = require("./models/review.js");
 
 const dbUrl = process.env.ATLASDB_URL;
 const {isLoggedIn} =require ("./middleware.js")
+const {saveRedirectUrl} =require ("./middleware.js")
 main()
   .then(() => {
     console.log("connected to DB");
@@ -83,49 +84,116 @@ app.use((req, res, next) => {
   next();
 })
 
-app.get("/", async (req, res) => {
+app.get("/login", async (req, res) => {
   res.render("login.ejs");
 });
-app.get("/home", isLoggedIn , async (req, res) => {
+app.get("/", async (req, res) => {
   const allListings = await Listing.find({});
-  res.render("index.ejs", { allListings });
+  const allReviews = await Review.find({});
+  res.render("index.ejs", { allReviews : allReviews, allListings: allListings });
 });
-app.get("/about", isLoggedIn , async (req, res) => {
+app.get("/about", async (req, res) => {
     res.render("about.ejs");
 });
-app.get("/blog", isLoggedIn , async (req, res) => {
+app.get("/blog", async (req, res) => {
   const allListings = await Blog.find({});
   res.render("blog.ejs", { allListings });
 });
-app.get("/education", isLoggedIn , async (req, res) => {
+app.get('/profile', isLoggedIn ,async (req, res) => {
+  const user = await User.findOne({ email: req.user.email });
+  res.render("profile.ejs", { user }); 
+});
+
+app.get("/education",  async (req, res) => {
   const allListings = await Education.find({});
   res.render("education.ejs", { allListings });
 });
-app.get("/new",  isLoggedIn ,async (req, res) => {
-  res.render("new.ejs");
+app.get("/new",  isLoggedIn ,async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {  res.render("new.ejs"); }
+    else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+   
+   
+  
+ 
+ });app.get("/newReview",  isLoggedIn ,async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email !== allowedEmail) {  res.render("reviewnew.ejs"); }
+    else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");}});
+  
+  app.post("/newReview", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+    if (req.user && req.user.email !== allowedEmail) {
+      const newreview = new Review(req.body.histing); 
+      await newreview.save();
+     res.redirect("/");
+    } else {
+      res.status(403).send("Access denied: You are not authorized to view this page.");
+    }
+   
+   
+  
+ 
  });
- app.get("/blognew", isLoggedIn , async (req, res) => {
-   res.render("blognew.ejs");
+ app.get("/blognew", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {  res.render("blognew.ejs");
+   
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+   
   });
-  app.get("/educationnew", isLoggedIn , async (req, res) => {
-   res.render("educationnew.ejs");
+  app.get("/educationnew", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+    if (req.user && req.user.email === allowedEmail) {
+      res.render("educationnew.ejs");
+    } else {
+      res.status(403).send("Access denied: You are not authorized to view this page.");
+    }
+   
   });
   
   
-app.post("/new", isLoggedIn , async (req, res) => {
-  const newlistings = new Listing(req.body.listing); 
-  await newlistings.save();
- res.redirect("/home");
+app.post("/new", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {
+    const newlistings = new Listing(req.body.listing); 
+    await newlistings.save();
+   res.redirect("/");
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+ 
+ 
 });
-app.post("/blognew", isLoggedIn , async (req, res) => {
-  const newblog = new Blog(req.body.pisting); 
-  await newblog.save();
- res.redirect("/blog");
+app.post("/blognew", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {
+    const newblog = new Blog(req.body.pisting); 
+    await newblog.save();
+   res.redirect("/blog");
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+ 
+ 
 });
-app.post("/educationnew", isLoggedIn , async (req, res) => {
+app.post("/educationnew", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {
+    
   const neweducation = new Education(req.body.histing); 
   await neweducation.save();
  res.redirect("/education");
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+ 
+
 });
  
 
@@ -140,16 +208,16 @@ app.post("/educationnew", isLoggedIn , async (req, res) => {
           return next(err);
         }
         req.flash("success", "Registered Successfully");
-        res.redirect("/");
+        res.redirect("/login");
       });
     } catch (e) {
       req.flash("error", e.message);
-      res.redirect("/");
+      res.redirect("/login");
     }
   });
-  app.post("/login",
-    passport.authenticate("local",{failureRedirect: "/",failureFlash: true}), async (req, res) => {
-    res.redirect("/home");
+  app.post("/login",saveRedirectUrl,
+    passport.authenticate("local",{failureRedirect: "/",failureFlash: true}), async (req, res) => { let redirectUrl = res.locals.redirectUrl ;
+    res.redirect(redirectUrl);
   });
   
   app.get("/logout",isLoggedIn ,  async (req, res) => {
@@ -162,15 +230,19 @@ app.post("/educationnew", isLoggedIn , async (req, res) => {
     });
   });
   
-  app.get("/addtocart/:productid",isLoggedIn,async (req,res)=> {
+  app.get("/addtocart/:productid",isLoggedIn,async (req,res)=>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+    if (req.user && req.user.email !== allowedEmail) {
 
   let user =await User.findOne({email:req.user.email})
   user.cart.push(req.params.productid)
-  await user.save();
+  await user.save(); res.redirect("/")
   req.flash("success", "Added to cart");
-     res.redirect("/home")
+    } else {
+      res.status(403).send("Access denied: You are not authorized to view this page.");
+    }
   })
-  app.get("/remove-from-cart/:productid", async (req, res) => {
+  app.get("/remove-from-cart/:productid",isLoggedIn , async (req, res) => {
     const user = await User.findOne({ email: req.user.email });
     
    
@@ -180,13 +252,19 @@ app.post("/educationnew", isLoggedIn , async (req, res) => {
     req.flash("success", "Removed from cart");
     res.redirect("/shop"); 
   });
-  app.get("/shop", isLoggedIn , async (req, res) => {
-    let user =await User.findOne({email:req.user.email}).populate("cart")
-   let users =await User.findOne({email:req.user.email}).populate("order")
-    const totalAmount = user.cart.reduce((sum, item) => sum + item.price, 0);
-    const allListings = await Listing.find({});
-    const cartTitles = user.cart.map(item => item.title).join(", ");
-    res.render("shop.ejs",{user: user,users: users, totalAmount: totalAmount, cartTitles: cartTitles, allListings: allListings});
+  app.get("/shop", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+    if (req.user && req.user.email !== allowedEmail) { let user =await User.findOne({email:req.user.email}).populate("cart")
+      let users =await User.findOne({email:req.user.email}).populate("order")
+       const totalAmount = user.cart.reduce((sum, item) => sum + item.price, 0);
+       const allListings = await Listing.find({});
+       const cartTitles = user.cart.map(item => item.title).join(", ");
+       res.render("shop.ejs",{user: user,users: users, totalAmount: totalAmount, cartTitles: cartTitles, allListings: allListings});
+     
+    } else {
+      res.status(403).send("Access denied: You are not authorized to view this page.");
+    }
+  
 });
   
 app.get("/checkout", isLoggedIn , async (req, res) => {
@@ -214,9 +292,16 @@ user.cart = [];
 await user.save();req.flash("success", "Purchased Successfully");
 res.redirect("/home");
 });
-app.get("/customer", isLoggedIn , async (req, res) => {
-  const allListings = await Customer.find({});
-  res.render("customer.ejs", { allListings });
+
+app.get("/customer", isLoggedIn, async (req, res) => {
+  const allowedEmail = "freeforfire15@gmail.com";  
+
+  if (req.user && req.user.email === allowedEmail) {
+    const allListings = await Customer.find({});
+    res.render("customer.ejs", { allListings });
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
 });
  app.listen(8080, () => {
       console.log("server is listening to port 8080");

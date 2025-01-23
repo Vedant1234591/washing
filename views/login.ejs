@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wanderlust</title>
   
-  <!-- External Stylesheets -->
+ 
   <link rel="stylesheet" href="/stylesheet/style.css" />
   <link rel="stylesheet" href="/stylesheet/output.css" />
   
-  <!-- Bootstrap CSS -->
+ 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous" />
   
-  <!-- Font Awesome for Icons -->
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
-  <!-- Google Fonts -->
+ 
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   
   <style>
-    /* Background and Global Styles */
+   
     body {
       font-family: 'Barlow', sans-serif;
-      background-image: url('/images/veg.png'); /* Agricultural Background */
+      background-image: url('/images/veg.png'); 
       background-size: cover;
       background-position: center;
       color: #fff;
@@ -30,43 +30,41 @@
       margin: 0;
     }
 
-    /* Container Styling */
+  
     .container {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100%;
-      flex-direction: row; /* Align items horizontally */
-      gap: 30px; /* Space between the two boxes */
+      flex-direction: row; 
+      gap: 30px; 
     }
 
-    /* Form Box Container */
     .form-box {
-      background: linear-gradient(135deg, #751f8a, #c24ecd); /* Gradient teal-cyan for vibrancy */
+      background: linear-gradient(135deg, #751f8a, #c24ecd); 
       border-radius: 20px;
       padding: 40px;
       width: 100%;
-      max-width: 400px; /* Keep a maximum width */
+      max-width: 400px; 
       text-align: center;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      color: #fff; /* White text inside the box */
+      color: #fff;
     }
 
-    /* Title */
     h1 {
       font-size: 2rem;
       margin-bottom: 25px;
       font-weight: 700;
-      color: #ff9e2f; /* Bright orange for the title */
+      color: #ff9e2f; 
     }
 
-    /* Form Label */
+
     .form-label {
       font-weight: 600;
-      color: #f7f7f7; /* Light gray for the labels */
+      color: #f7f7f7; 
     }
 
-    /* Form Fields */
+    
     .form-control {
       background-color: #ffffff;
       color: #333;
@@ -76,15 +74,15 @@
       margin-bottom: 15px;
     }
 
-    /* Focus Effect on Form Fields */
+    
     .form-control:focus {
       border-color: #ff9e2f;
       box-shadow: 0 0 10px rgba(255, 158, 47, 0.5);
     }
 
-    /* Submit Button */
+   
     .btn {
-      background: linear-gradient(135deg, #ff7b2f, #ff457d); /* Interactive gradient button */
+      background: linear-gradient(135deg, #ff7b2f, #ff457d); 
       color: white;
       border-radius: 10px;
       padding: 15px;
@@ -93,12 +91,11 @@
       transition: all 0.3s ease;
     }
 
-    /* Button Hover Effect */
+   
     .btn:hover {
-      background: linear-gradient(135deg, #ff6a2c, #ff1f65); /* Darker gradient on hover */
+      background: linear-gradient(135deg, #ff6a2c, #ff1f65); 
     }
 
-    /* Flash Message */
     .flash-message {
       background-color: #ff9e2f;
       color: white;
@@ -109,15 +106,15 @@
       text-align: center;
     }
 
-    /* Responsive Design */
+   
     @media (max-width: 768px) {
       .container {
-        flex-direction: column; /* Stack forms vertically for smaller screens */
-        gap: 20px; /* Space between boxes on small screens */
+        flex-direction: column; 
+        gap: 20px; 
       }
 
       .form-box {
-        width: 100%; /* Make the form box take up full width */
+        width: 100%;
         max-width: none;
         padding: 20px;
       }
@@ -132,7 +129,7 @@
 <body>
 
   <div class="container">
-    <!-- Sign-Up Form Box -->
+   
     <div class="form-box">
       <h1>Sign Up</h1>
       <form action="/register" method="POST" class="needs-validation" novalidate>
@@ -152,7 +149,7 @@
       </form>
     </div>
 
-    <!-- Login Form Box -->
+
     <div class="form-box">
       <h1>Login</h1>
       <form action="/login" method="POST" class="needs-validation" novalidate>

@@ -96,3 +96,60 @@ closeButton.addEventListener("click", function() {
 document.addEventListener("DOMContentLoaded", function() {
   sidebar.classList.remove("open"); // Sidebar starts off-screen (hidden)
 });
+
+
+// Get elements
+const profileToggle = document.getElementById('profile-toggle');
+const profileBox = document.querySelector('.profile-box');
+
+// Add click event listener to the profile image (trigger the profile box toggle)
+profileToggle.addEventListener('click', function(event) {
+  event.stopPropagation(); // Prevent the event from bubbling up to document click handler
+  
+  // Toggle the visibility of the profile menu
+  profileBox.classList.toggle('hidden');
+});
+
+// Close the profile box if clicking outside of it
+document.addEventListener('click', function(event) {
+  // If the click is outside the profile box and profile toggle (profile picture)
+  if (!profileBox.contains(event.target) && !profileToggle.contains(event.target)) {
+    profileBox.classList.add('hidden'); // Hide the profile menu
+  }
+});
+document.addEventListener("DOMContentLoaded", function() {
+  const profileToggle = document.getElementById('profile-toggle');
+  const profileBox = document.querySelector('.profile-box');
+
+  // Toggle the visibility of the profile menu when the profile picture is clicked
+  profileToggle.addEventListener('click', function(event) {
+    event.stopPropagation(); // Prevent the click from closing the menu immediately
+    profileBox.classList.toggle('hidden');
+  });
+
+  // Close the profile box when clicking outside of it
+  document.addEventListener('click', function(event) {
+    // Check if the click is outside the profile box or profile toggle (profile picture)
+    if (!profileBox.contains(event.target) && !profileToggle.contains(event.target)) {
+      profileBox.classList.add('hidden'); // Hide the profile menu
+    }
+  });
+});
+document.addEventListener("DOMContentLoaded", function() {
+  const profileToggle = document.getElementById('profile-toggle');
+  const profileBox = document.querySelector('.profile-box');
+
+  // Toggle the visibility of the profile menu when the profile picture is clicked
+  profileToggle.addEventListener('click', function(event) {
+    event.stopPropagation(); // Prevent the click from closing the menu immediately
+    profileBox.classList.toggle('hidden');
+  });
+
+  // Close the profile box when clicking outside of it
+  document.addEventListener('click', function(event) {
+    // Check if the click is outside the profile box or profile toggle (profile picture)
+    if (!profileBox.contains(event.target) && !profileToggle.contains(event.target)) {
+      profileBox.classList.add('hidden'); // Hide the profile menu
+    }
+  });
+});
