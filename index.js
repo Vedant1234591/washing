@@ -93,6 +93,9 @@ app.get("/laundary", async (req, res) => {
 app.get("/login", async (req, res) => {
   res.render("login.ejs");
 });
+app.get("/register", async (req, res) => {
+  res.render("register.ejs");
+});
 app.get("/", async (req, res) => {
   const allListings = await Listing.find({});
   const allReviews = await Review.find({});
@@ -304,7 +307,7 @@ app.post("/checkout", isLoggedIn, async (req, res) => {
     );
 
     req.flash("success", "Order placed successfully!");
-    res.redirect("/orders");
+    res.redirect("/order");
 
   } catch (err) {
     console.error("Checkout error:", err);
