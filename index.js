@@ -314,7 +314,7 @@ app.post("/checkout", isLoggedIn, async (req, res) => {
 });
 
 // Orders Route
-app.get("/orders", isLoggedIn, async (req, res) => {
+app.get("/order", isLoggedIn, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .populate({
