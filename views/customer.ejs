@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop - Trishastik Bharat Sustainable Farms</title>
+    <title>ved laundary</title>
     <link rel="icon" href="/images/logo.png" type="image/png">
     <link href="/stylesheet/output.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -16,31 +15,26 @@
     
     <section id="featured-products" class="py-16 bg-white">
         <div class="container mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-8 text-gray-800">OUR CUSTOMER</h2>
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">OUR CUSTOMERS</h2>
             
-            
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="cart">
-                    <% for (let listing of allListings) { %>
-                        <div class="bg-gray-100 p-4 rounded-lg shadow-lg ">
-                        
-                        <h3 class="text-xl font-semibold text-gray-800"> Customer Name : <%= listing.name %></h3>
-                        <p class="text-lg font-semibold text-gray-800 mt-2">Customer address :  <%= listing.address %></p>
-                        <p class="text-lg font-semibold text-gray-800 mt-2">Customer Phone : <%= listing.phone %></p>
-                        <p class="text-lg font-semibold text-gray-800 mt-2">Products taken :  <%= listing.products %></p>
-                        <p class="text-lg font-semibold text-gray-800 mt-2">Paid amount : <%= listing.totalamount %></p> 
-                      
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="cart">
+                <% for (let customer of allListings) { %>
+                    <div class="bg-gray-100 p-4 rounded-lg shadow-lg">
+                       
+                        <h4 class="text-lg font-semibold text-gray-800">Customer: <%= customer.name %></h4>
+                        <p class="text-md text-gray-700 mt-1">Address: <%= customer.address %></p>
+                        <p class="text-md text-gray-700">Phone: <%= customer.phone %></p>
+                        <p class="text-md text-gray-700">Products: <%= customer.products %></p>
+                        <p class="text-md text-gray-700">Total Cloth: <%= customer.totalcloth %></p> 
+                        <p class="text-md text-gray-700">Total Weight: <%= customer.totalweight %></p>  
+                        <p class="text-md text-gray-700">Cloth Types: <%= customer.nameofcloth %></p>  
+                        <p class="text-lg font-bold text-green-600 mt-2">Amount: ₹<%= customer.totalamount %></p>
                         
                     </div>
-                    <% } %>
-                </div>
-                
-            
+                <% } %>
+            </div>
         </div>
     </section>
-   
-  
-
-   
 
     <%- include("./includes/footer.ejs") %>
     <script src="/javascript/script.js"></script>

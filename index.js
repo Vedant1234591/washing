@@ -6,7 +6,7 @@ const app = express();
 const mongoose = require("mongoose");
 const path = require("path"); 
 const methodOverride = require("method-override");
-const ejsMate = require("ejs-mate"); 
+const cors = require('cors');
 const session = require("express-session");
 const MongoStore = require("connect-mongo")
 {import('tailwindcss').Config}
@@ -14,18 +14,19 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
+const bodyParser = require('body-parser');
 
 const Listing = require("./models/listing.js");
-const Blog = require("./models/blog.js");
+const Laundary = require("./models/laundary.js");
 const Education = require("./models/education.js");
 const User = require("./models/user.js");
 const Customer = require("./models/customer.js");
 const Review = require("./models/review.js");
-
+const FAQ = require('./models/faqs.js');
 const dbUrl = process.env.ATLASDB_URL;
 const {isLoggedIn} =require ("./middleware.js")
 const {saveRedirectUrl} =require ("./middleware.js")
-main()
+main() 
   .then(() => {
     console.log("connected to DB");
   })
@@ -41,7 +42,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-
+app.use(cors());
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
@@ -83,7 +85,11 @@ app.use((req, res, next) => {
   res.locals.currUser = req.user;
   next();
 })
-
+app.get("/laundary", async (req, res) => {
+  const allListings = await Laundary.find({});
+  
+  res.render("listings.ejs", {  allListings: allListings });
+});
 app.get("/login", async (req, res) => {
   res.render("login.ejs");
 });
@@ -95,9 +101,13 @@ app.get("/", async (req, res) => {
 app.get("/about", async (req, res) => {
     res.render("about.ejs");
 });
-app.get("/blog", async (req, res) => {
-  const allListings = await Blog.find({});
-  res.render("blog.ejs", { allListings });
+app.get("/geo", isLoggedIn,async (req, res) => {const allowedEmail = "freeforfire15@gmail.com"; 
+  if (req.user && req.user.email !== allowedEmail) {    res.render("geolocation.ejs"); }
+    else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+   
+
 });
 app.get('/profile', isLoggedIn ,async (req, res) => {
   const user = await User.findOne({ email: req.user.email });
@@ -138,19 +148,20 @@ app.get("/new",  isLoggedIn ,async (req, res) => { const allowedEmail = "freefor
   
  
  });
- app.get("/blognew", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
 
-  if (req.user && req.user.email === allowedEmail) {  res.render("blognew.ejs");
-   
-  } else {
-    res.status(403).send("Access denied: You are not authorized to view this page.");
-  }
-   
-  });
   app.get("/educationnew", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
 
     if (req.user && req.user.email === allowedEmail) {
       res.render("educationnew.ejs");
+    } else {
+      res.status(403).send("Access denied: You are not authorized to view this page.");
+    }
+   
+  });
+  app.get("/newlaundary", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
+
+    if (req.user && req.user.email === allowedEmail) {
+      res.render("newlaundary.ejs");
     } else {
       res.status(403).send("Access denied: You are not authorized to view this page.");
     }
@@ -170,12 +181,13 @@ app.post("/new", isLoggedIn , async (req, res) =>  { const allowedEmail = "freef
  
  
 });
-app.post("/blognew", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
+
+app.post("/newlaundary", isLoggedIn , async (req, res) =>  { const allowedEmail = "freeforfire15@gmail.com";  
 
   if (req.user && req.user.email === allowedEmail) {
-    const newblog = new Blog(req.body.pisting); 
-    await newblog.save();
-   res.redirect("/blog");
+    const newlistings = new Laundary(req.body.listing); 
+    await newlistings.save();
+   res.redirect("/");
   } else {
     res.status(403).send("Access denied: You are not authorized to view this page.");
   }
@@ -215,6 +227,8 @@ app.post("/educationnew", isLoggedIn , async (req, res) =>  { const allowedEmail
       res.redirect("/");
     }
   });
+
+
   app.post("/login",saveRedirectUrl,
     passport.authenticate("local",{failureRedirect: "/",failureFlash: true}), async (req, res) => { let redirectUrl = res.locals.redirectUrl ;
     res.redirect(redirectUrl);
@@ -237,35 +251,12 @@ app.post("/educationnew", isLoggedIn , async (req, res) =>  { const allowedEmail
   let user =await User.findOne({email:req.user.email})
   user.cart.push(req.params.productid)
   await user.save(); 
-  req.flash("success", "Added to cart");res.redirect("/")
+  req.flash("success", "Added to cart");res.redirect("/checkout")
     } else {
       res.status(403).send("Access denied: You are not authorized to view this page.");
     }
   })
-  app.get("/remove-from-cart/:productid",isLoggedIn , async (req, res) => {
-    const user = await User.findOne({ email: req.user.email });
-    
-   
-    user.cart = user.cart.filter(productId => productId.toString() !== req.params.productid);
-    await user.save();
   
-    req.flash("success", "Removed from cart");
-    res.redirect("/shop"); 
-  });
-  app.get("/shop", isLoggedIn , async (req, res) => { const allowedEmail = "freeforfire15@gmail.com";  
-
-    if (req.user && req.user.email !== allowedEmail) { let user =await User.findOne({email:req.user.email}).populate("cart")
-      let users =await User.findOne({email:req.user.email}).populate("order")
-       const totalAmount = user.cart.reduce((sum, item) => sum + item.price, 0);
-       const allListings = await Listing.find({});
-       const cartTitles = user.cart.map(item => item.title).join(", ");
-       res.render("shop.ejs",{user: user,users: users, totalAmount: totalAmount, cartTitles: cartTitles, allListings: allListings});
-     
-    } else {
-      res.status(403).send("Access denied: You are not authorized to view this page.");
-    }
-  
-});
   
 app.get("/checkout", isLoggedIn , async (req, res) => {
   let user =await User.findOne({email:req.user.email}).populate("cart")
@@ -276,21 +267,75 @@ app.get("/checkout", isLoggedIn , async (req, res) => {
   res.render("checkout.ejs",{user: user, cartTitles: cartTitles, totalAmount: totalAmount});
   
 });
+// Checkout Route
+app.post("/checkout", isLoggedIn, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email }).populate("cart");
+    
+    // Validate cart
+    if (!user.cart || user.cart.length === 0) {
+      req.flash("error", "Your cart is empty");
+      return res.redirect("/checkout");
+    }
 
-app.post("/checkout", isLoggedIn , async (req, res) => {
-const newlistings = new Customer(req.body.listing); 
-await newlistings.save();
-const user = await User.findOne({ email: req.user.email }).populate("cart");
-const productIds = req.body.productIds;
-if (!productIds || productIds.length === 0) {
-    req.flash("error", "Your cart is empty.");
-    return res.redirect("/shop"); 
+    // Create order
+    const newOrder = new Customer({
+      name: req.body.customer.name,
+      address: req.body.customer.address,
+      phone: req.body.customer.phone,
+      totalcloth: req.body.customer.totalcloth,
+      totalweight: req.body.customer.totalweight,
+      nameofcloth: req.body.customer.nameofcloth,
+      products: user.cart.map(item => item.title).join(", "),
+      totalamount: user.cart.reduce((sum, item) => sum + item.price, 0),
+      user: user._id
+    });
+
+    const savedOrder = await newOrder.save();
+
+    // Update user
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $push: { orders: savedOrder._id },
+        $set: { cart: [] }
+      },
+      { new: true }
+    );
+
+    req.flash("success", "Order placed successfully!");
+    res.redirect("/orders");
+
+  } catch (err) {
+    console.error("Checkout error:", err);
+    req.flash("error", "Failed to process your order");
+    res.redirect("/checkout");
   }
-const cartProducts = await Listing.find({ '_id': { $in: productIds } });
-user.order = [...user.order, ...cartProducts]; 
-user.cart = [];
-await user.save();req.flash("success", "Purchased Successfully");
-res.redirect("/");
+});
+
+// Orders Route
+app.get("/orders", isLoggedIn, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: "orders",
+        options: { sort: { createdAt: -1 } }
+      });
+
+    res.render("orders", {
+      orders: user.orders,
+      formatDate: (date) => date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    });
+
+  } catch (err) {
+    console.error("Orders error:", err);
+    req.flash("error", "Failed to load orders");
+    res.redirect("/");
+  }
 });
 
 app.get("/customer", isLoggedIn, async (req, res) => {
@@ -303,6 +348,90 @@ app.get("/customer", isLoggedIn, async (req, res) => {
     res.status(403).send("Access denied: You are not authorized to view this page.");
   }
 });
+// Add these routes at the end before app.listen()
+
+// Chatbot Page Route
+app.get('/chatbot', (req, res) => {
+  res.render('chatbot.ejs'); // Make sure you have chatbot.ejs in views
+});
+
+// Admin Panel Route
+app.get('/admin', isLoggedIn, (req, res) => {
+  const allowedEmail = "freeforfire15@gmail.com";  
+  if (req.user && req.user.email === allowedEmail) {
+    res.render('newchat.ejs'); // Make sure you have admin.ejs in views
+  } else {
+    res.status(403).send("Access denied: You are not authorized to view this page.");
+  }
+});
+
+// Enhanced FAQ API Routes with Admin Auth
+app.get('/api/faqs', async (req, res) => {
+  try {
+    const faqs = await FAQ.find().sort({ createdAt: -1 });
+    res.json(faqs);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/faqs', isLoggedIn, async (req, res) => {
+  const allowedEmail = "freeforfire15@gmail.com";
+  
+  try {
+    // Validate admin access
+    if (req.user?.email !== allowedEmail) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Validate input
+    const { question, answer, keywords } = req.body;
+    if (!question?.trim() || !answer?.trim() || !keywords?.length) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    // Create FAQ
+    const faq = new FAQ({
+      question: question.trim(),
+      answer: answer.trim(),
+      keywords: keywords.filter(k => k.trim().length > 0)
+    });
+
+    await faq.save();
+    res.status(201).json(faq);
+    
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+app.delete('/api/faqs/:id', isLoggedIn, async (req, res) => {
+  const allowedEmail = "freeforfire15@gmail.com";
+  try {
+    if (req.user && req.user.email === allowedEmail) {
+      await FAQ.findByIdAndDelete(req.params.id);
+      res.status(204).send();
+    } else {
+      res.status(403).json({ error: 'Unauthorized' });
+    }
+  } catch (err) {
+    res.status(404).json({ error: 'FAQ not found' });
+  }
+});
+
+// Add this route before your app.listen()
+app.get('/api/laundaries', async (req, res) => {
+  try {
+      const laundaries = await Laundary.find({});
+      res.json(laundaries);
+  } catch (error) {
+      console.error('Error fetching laundaries:', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
  app.listen(8080, () => {
       console.log("server is listening to port 8080");
   }); 

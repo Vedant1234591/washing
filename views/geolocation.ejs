@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nearest Laundry Finder</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet'>    <link href="/stylesheet/output.css" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .info-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4264fb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2a4fdf;
+        }
+    </style>
+</head>
+    <%- include("./includes/navbar.ejs") %>
+    <body>
+    <div class="info-box">
+        <button onclick="getLocation()">Find Nearest Laundry</button>
+        <p id="coordinates">Latitude: <br>Longitude: </p>
+        <p id="nearest">Nearest Laundry: </p>
+        <p id="distance">Distance: </p>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWVwaXl1c2hkZXYiLCJhIjoiY20yZXR5N3huMDF4ZjJqczl3N2Mxajc3ZyJ9.q3RJbLjuFlL1U4NzkQijNA';
+        
+        let map;
+        let userMarker;
+        let markers = [];
+        let databaseLocations = [];
+
+        async function initMap() {
+            try {
+                // Fetch laundry locations from your database
+                const response = await fetch('/api/laundaries');
+                const laundaries = await response.json();
+                
+                // Transform data for our application
+                databaseLocations = laundaries.map(laundry => ({
+                    name: laundry.title,
+                    lat: parseFloat(laundry.latitude),
+                    lng: parseFloat(laundry.longitude),
+                    phone: laundry.phone,
+                    description: laundry.description
+                }));
+
+                // Initialize map
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v11',
+                    center: [databaseLocations[0]?.lng || 0, databaseLocations[0]?.lat || 0],
+                    zoom: 10
+                });
+
+                // Add markers for laundry locations
+                databaseLocations.forEach((location, index) => {
+                    const marker = new mapboxgl.Marker({ color: '#ff0000' })
+                        .setLngLat([location.lng, location.lat])
+                        .setPopup(new mapboxgl.Popup().setHTML(`
+                            <strong>${location.name}</strong><br>
+                            ${location.description}<br>
+                            Phone: ${location.phone}
+                        `))
+                        .addTo(map);
+                    markers.push(marker);
+                });
+
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                alert('Error loading laundry locations');
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function getLocation() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Update coordinates display
+                    document.getElementById('coordinates').innerHTML = 
+                        `Latitude: ${lat.toFixed(4)}<br>Longitude: ${lng.toFixed(4)}`;
+
+                    // Find nearest laundry
+                    let nearest = { distance: Infinity };
+                    databaseLocations.forEach((location, index) => {
+                        const distance = calculateDistance(lat, lng, location.lat, location.lng);
+                        
+                        // Update marker popup with distance
+                        markers[index].getPopup()
+                            .setHTML(`
+                                <strong>${location.name}</strong><br>
+                                ${location.description}<br>
+                                Phone: ${location.phone}<br>
+                                Distance: ${distance.toFixed(2)} km
+                            `);
+
+                        if (distance < nearest.distance) {
+                            nearest = { ...location, distance };
+                        }
+                    });
+
+                    // Update nearest laundry display
+                    document.getElementById('nearest').innerHTML = 
+                        `Nearest Laundry: ${nearest.name}`;
+                    document.getElementById('distance').innerHTML = 
+                        `Distance: ${nearest.distance.toFixed(2)} km`;
+
+                    // Update map view
+                    if (!map) await initMap();
+                    map.flyTo({ center: [lng, lat], zoom: 12 });
+
+                    // Update user marker
+                    if (userMarker) userMarker.remove();
+                    userMarker = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(map);
+                },
+                (error) => {
+                    alert(`Error getting location: ${error.message}`);
+                }
+            );
+        }
+
+        window.onload = initMap;
+    </script>      <%- include("./includes/footer.ejs") %>
+</body>
+</html>

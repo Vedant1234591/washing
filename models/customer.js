@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const listingSchema = new Schema({
+const customerSchema = new Schema({
   name: String,
   address: String,
-  totalamount: Number,
-  phone: Number,
+  phone: String,
   products: String,
-  });
-   
-const Customer = mongoose.model("Customer", listingSchema);
+  totalcloth: String,
+  totalweight: String,
+  nameofcloth: String,
+  totalamount: Number,
+
+});
+
+const Customer = mongoose.model("Customer", customerSchema);
 module.exports = Customer;
-  
- 

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Admin</title>
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .faq-form {
+            background: #f5f6fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .faq-list {
+            margin-top: 20px;
+        }
+
+        .faq-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .keywords {
+            margin: 10px 0;
+        }
+
+        .keyword-pill {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Chatbot Knowledge Base</h1>
+        
+        <div class="faq-form">
+            <h2>Add New FAQ</h2>
+            <div class="form-group">
+                <input type="text" id="question" placeholder="Enter question">
+            </div>
+            <div class="form-group">
+                <textarea id="answer" rows="4" placeholder="Enter answer"></textarea>
+            </div>
+            <div class="form-group">
+                <input type="text" id="keywords" placeholder="Comma-separated keywords">
+            </div>
+            <button onclick="handleAddFAQ()">Add FAQ</button>
+            <div id="error-message" class="error-message"></div>
+        </div>
+
+        <div class="faq-list" id="faq-list"></div>
+    </div>
+
+    <script>
+        async function fetchFAQs() {
+            try {
+                const response = await fetch('/api/faqs');
+                const faqs = await response.json();
+                renderFAQs(faqs);
+            } catch (error) {
+                showError('Failed to load FAQs');
+            }
+        }
+
+        function renderFAQs(faqs) {
+            const container = document.getElementById('faq-list');
+            container.innerHTML = faqs.map(faq => `
+                <div class="faq-item">
+                    <h3>${faq.question}</h3>
+                    <p>${faq.answer}</p>
+                    <div class="keywords">
+                        ${faq.keywords.map(k => `
+                            <span class="keyword-pill">${k}</span>
+                        `).join('')}
+                    </div>
+                    <button onclick="handleDeleteFAQ('${faq._id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        async function handleAddFAQ() {
+             
+                const question = document.getElementById('question').value.trim();
+                const answer = document.getElementById('answer').value.trim();
+                const keywords = document.getElementById('keywords').value.split(',')
+                  .map(k => k.trim().toLowerCase())
+                  .filter(k => k.length > 0);
+              
+                if (!question || !answer || keywords.length === 0) {
+                  showError('All fields are required with valid keywords');
+                  return;
+                }
+
+            try {
+                const response = await fetch('/api/faqs', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                     // Add this line
+                  },
+                  body: JSON.stringify({
+                    question,
+                    answer,
+                    keywords: keywords.map(k => k.trim().toLowerCase())
+                  })
+                });
+                
+
+                if (!response.ok) throw new Error('Failed to add FAQ');
+                
+                document.getElementById('question').value = '';
+                document.getElementById('answer').value = '';
+                document.getElementById('keywords').value = '';
+                fetchFAQs();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function handleDeleteFAQ(id) {
+            try {
+                const response = await fetch(`/api/faqs/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete FAQ');
+                fetchFAQs();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            setTimeout(() => errorDiv.textContent = '', 3000);
+        }
+
+        // Initial load
+        window.onload = fetchFAQs;
+    </script>
+</body>
+</html>

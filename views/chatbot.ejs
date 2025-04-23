@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laundry Service Chatbot</title>    <link href="/stylesheet/output.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background: #ecf0f1;
+            margin-right: auto;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <%- include("./includes/navbar.ejs") %>
+    <div class="chat-container">
+        <div class="chat-header">Laundry Service Assistant</div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="handleSendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let knowledgeBase = {};
+
+        async function loadFAQs() {
+            try {
+                const response = await fetch('/api/faqs');
+                const faqs = await response.json();
+                
+                knowledgeBase = faqs.reduce((acc, faq) => {
+                    faq.keywords.forEach(keyword => {
+                        acc[keyword.toLowerCase()] = faq.answer;
+                    });
+                    return acc;
+                }, {});
+                
+                knowledgeBase.default = "I'm sorry, I didn't understand that. Could you please rephrase?";
+            } catch (error) {
+                console.error('Error loading FAQs:', error);
+            }
+        }
+
+        function addMessage(text, isUser = false) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            message.textContent = text;
+            messagesDiv.appendChild(message);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function handleSendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, true);
+                input.value = '';
+                
+                setTimeout(async () => {
+                    const response = await getBotResponse(message.toLowerCase());
+                    addMessage(response);
+                }, 500);
+            }
+        }
+
+        async function getBotResponse(message) {
+            const keywords = Object.keys(knowledgeBase)
+                .filter(k => k !== 'default')
+                .sort((a, b) => b.length - a.length);
+            
+            for (const keyword of keywords) {
+                if (message.includes(keyword)) {
+                    return knowledgeBase[keyword];
+                }
+            }
+            return knowledgeBase.default;
+        }
+
+        // Initialize when page loads
+        window.onload = loadFAQs;
+    </script>
+    <%- include("./includes/footer.ejs") %>
+</body>
+</html>

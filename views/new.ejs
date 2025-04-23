@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WanderLust</title>
+    <title>ved laundary</title>
     
     <link rel="stylesheet" href="/stylesheet/style.css" />
     <link rel="stylesheet" href="/stylesheet/output.css" />
@@ -30,8 +31,9 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>  
   </head>
-  <body>
-   
+<body class="bg-slate-600">
+    <!-- Header Section -->
+
     <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white"><h1 class="text-4xl md:text-6xl font-bold"><%- include("./includes/flash.ejs") %></h1></div>
     <div class="row mt-3">
         <div class="col-8 offset-2">
@@ -55,7 +57,7 @@
             </div>
       
             <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
+              <label for="description" class="form-label">description</label>
               <textarea
                 name="listing[description]"
                 type="text"
@@ -90,6 +92,7 @@
               />
               <div class="invalid-feedback">Location should be valid</div>
             </div>
+         
             <button class="btn btn-dark add-btn mt-3">Add</button>
           </form>
           <br /><br />
@@ -98,3 +101,4 @@
       <%- include("./includes/footer.ejs") %>
   </body>
 </html>
+

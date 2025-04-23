@@ -12,11 +12,11 @@ const userSchema = new Schema({
     default: [],
     ref: 'Listing'
   }],
-  order:[{
+  orders:[{
     type:mongoose.Schema.Types.ObjectId,
     default: [],
-    ref: 'Listing'
-  }]
+    ref: 'Customer'
+  }]   
   
 });
 
